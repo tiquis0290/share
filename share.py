@@ -9,10 +9,6 @@ UPLOAD_FOLDER = 'uploads'
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def allowed_file(filename):
-    # Allow all file types
-    return '.' in filename
-
 @app.route('/')
 def index():
     files = os.listdir(UPLOAD_FOLDER)
@@ -35,10 +31,6 @@ def upload_file():
             thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails', f'thumbnail_{filename}')
 
             file.save(file_path)
-
-            # Create a thumbnail for images
-            #if file.content_type.startswith('image/'):
-            #    create_thumbnail(file_path, thumbnail_path)
 
     files = os.listdir(UPLOAD_FOLDER)
     file_list_html = ''.join(f'<li><a href="/download/{file}">{file}</a>{thumbnail_tag(file)}</li>' for file in files)
