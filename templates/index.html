@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing</title>
+    <style>
+        #upload-indicator {
+            display: none;
+        }
+
+        #progress-bar {
+            width: 0;
+            height: 20px;
+            background-color: #4CAF50;
+            margin-top: 10px;
+            transition: width 0.3s;
+        }
+
+        #preview {
+            margin-top: 10px;
+        }
+
+        #preview img {
+            max-width: 100%;
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Sharing</h1>
+    
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="file">Choose files:</label>
+        <input type="file" name="file" id="file" multiple required>
+        <button type="button" onclick="uploadFiles()">Upload</button>
+    </form>
+
+    <div id="upload-indicator">
+        <div id="progress-bar"></div>
+        <span id="progress-text">Uploading...</span>
+    </div>
+
+    <div id="preview"></div>
+
+    <h2>Uploaded Files</h2>
+    <ul id="file-list">
+        {% for file in files %}
+            <li>
+                <a href="/download/{{ file }}">{{ file }}</a>
+                {% if file.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+		<img src="/download/{{ file }}" alt="{{ file }}" height="30">
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="/download/all">Download All as Zip</a>
+
+    <script>
+        function uploadFiles() {
+            var form = document.getElementById('upload-form');
+            var formData = new FormData(form);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', function(event) {
+                var progressBar = document.getElementById('progress-bar');
+                var progressText = document.getElementById('progress-text');
+
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.innerHTML = percentComplete.toFixed(2) + '%';
+                }
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById('upload-indicator').style.display = 'none';
+                    document.getElementById('file-list').innerHTML = xhr.responseText;
+                    document.getElementById('preview').innerHTML = ''; // Clear previous previews
+                }
+            };
+
+            xhr.open('POST', '/upload', true);
+            xhr.send(formData);
+
+            document.getElementById('upload-indicator').style.display = 'block';
+        }
+
+        document.getElementById('file').addEventListener('change', function() {
+            var preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            var files = this.files;
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) {
+                    var img = document.createElement('img');
+                    img.src = URL.createObjectURL(files[i]);
+                    preview.appendChild(img);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
