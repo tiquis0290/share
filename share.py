@@ -13,14 +13,6 @@ def allowed_file(filename):
     # Allow all file types
     return '.' in filename
 
-def create_thumbnail(file, thumbnail_path):
-    try:
-        with Image.open(file) as img:
-            img.thumbnail((100, 100))
-            img.save(thumbnail_path)
-    except Exception as e:
-        print(f"Error creating thumbnail: {e}")
-
 @app.route('/')
 def index():
     files = os.listdir(UPLOAD_FOLDER)
